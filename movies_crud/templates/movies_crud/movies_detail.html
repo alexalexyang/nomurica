@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<p>
+    {% if object.project_namek %}
+    <b>Projectname:</b> {{ object.project_name }}  <br/>
+    {% endif %}
+    {% if object.artists %}
+    <b>Artists:</b> {{ object.artists }}  <br/>
+    {% endif %}
+    {% if object.production_countries %}
+    <b>Production countries:</b> {{ object.production_countries }}
+    {% endif %}
+</p>
+
+<p>
+    {% if object.overview %}
+    <b>Overview:</b> {{ object.overview }}
+    {% endif %}
+</p>
+
+<p>
+    {% if object.start_date %}
+    <b>Start date:</b> {{ object.start_date }}  <br/>
+    {% endif %}
+    {% if object.end_date %}
+    <b>End date:</b> {{ object.end_date }}  <br/>
+    {% endif %}
+    {% if object.medium %}
+    <b>Medium:</b> {{ object.medium }}  <br/>
+    {% endif %}
+    {% if object.videos %}
+    <b>Videos:</b> {{ object.videos }}  <br/>
+    {% endif %}
+    {% if object.images %}
+    <b>Images:</b> {{ object.images }}  <br/>
+    {% endif %}
+    {% if object.website %}
+    <b>Website:</b> {{ object.website }}  <br/>
+    {% endif %}
+    {% if object.facebook %}
+    <b>Facebook:</b> {{ object.facebook }}  <br/>
+    {% endif %}
+    {% if object.twitter %}
+    <b>Twitter:</b> {{ object.twitter }}  <br/>
+    {% endif %}
+    {% if object.other_social_media %}
+    <b>Other social media:</b> {{ object.other_social_media }}
+    {% endif %}
+</p>
+{% if request.user.is_staff %}
+    <button type="submit" class="btn btn-default btn-sm">
+        <a href="/food/{{object.id}}/update">update</a>
+    </button>
+
+    <form action="{% url 'food delete' object.id %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="object_id" value="{{object.id}}"/>
+        <button type="submit" class="btn btn-default btn-sm">
+            delete
+        </button>
+    </form>
+{% else %}
+<p><a href="/admin">Log in</a> to edit.</p>
+{% endif %}
+
+{% endblock %}

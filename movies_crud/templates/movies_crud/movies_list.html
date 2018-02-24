@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+{% for object in object_list %}
+<div>
+    <p>
+        <!--<a href="/movies_nonhegemony/{{object.id}}">{{ object.title }}</a><br/>-->
+        <u>{{ object.title }}</u> <br/>
+        {% if object.production_countries %}
+        Production countries: {{ object.production_countries }} <br/>
+        {% endif %}
+        {% if object.release_date %}
+        Release date: {{ object.release_date }} <br/>
+        {% endif %}
+        {% if object.genres %}
+        Genres: {{ object.genres }} <br/>
+        {% endif %}
+        {% if object.overview %}
+        Overview: {{ object.overview }} <br/>
+        {% endif %}
+        {% if object.videos %}
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ object.videos }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        {% endif %}
+    </p>
+</div>
+{% endfor %}
+
+<!--{% if movie.images %}
+    Image url: {{ movie.images }} <br/>
+    <img src="https://image.tmdb.org/t/p/w154{{ movie.images }}"> <alt="Image for {{ movie.title }}"><br/>
+    {% endif %}-->
+
+{% endblock %}
