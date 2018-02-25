@@ -19,7 +19,9 @@ urlpatterns = i18n_patterns(
 
 urlpatterns += [
     # url('add/$', movies_crud_views.MoviesCreateView.as_view(), name='movies add'),
-    url('list/$', movies_crud_views.MoviesListView.as_view(), name='movies list'),
+    # url('list/$', movies_crud_views.MoviesListView.as_view(), name='movies list'),
+    url('movies/$', movies_crud_views.Movies, name='movies'),
+    # url('genres/$', movies_crud_views.GenresView, name='genres'),
     # url('(?P<pk>\d+)/$', movies_crud_views.MoviesDetailView.as_view(), name='movies detail'),
     # url('(?P<pk>\d+)/update$', movies_crud_views.MoviesUpdateView.as_view(), name='movies update'),
     # url('(?P<pk>\d+)/delete$', movies_crud_views.MoviesDeleteView.as_view(), name='movies delete'),

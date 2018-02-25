@@ -1,57 +1,113 @@
+from django.shortcuts import render, redirect
 from django.views import generic
-from django.core.urlresolvers import reverse, reverse_lazy
 from .models import Movies
+import psycopg2
 import random
 from .countries import countries
-from django.db.models import Q
+from .forms import GenresForm
+from django.core.urlresolvers import reverse, reverse_lazy
 
-import psycopg2
-from django.template import Context
+def Movies(request):
 
+    # Create cursor for database.
 
-class MoviesListView(generic.ListView):
-    model = Movies
+    connection = psycopg2.connect("dbname='db_nomurica_all_movies' "
+                                  "user='alex' "
+                                  "host='localhost' "
+                                  "password='password'")
 
-    # def get_queryset(self):
-    #     random_countries = []
-    #     while len(random_countries) < 20:
-    #         country_choice = random.choice(countries)
-    #         if country_choice in random_countries:
-    #             pass
-    #         else:
-    #             random_countries.append(country_choice)
+    c = connection.cursor()
 
-        # for i in random_countries:
-        #     print(i)
-        # print(len(random_countries))
+    # rows_list will become the context.
+    rows_list = []
+    form = GenresForm(request.POST)
 
-        # print([x for x in random_countries])
+    if request.method == 'POST':
 
-        # return Movies.objects.order_by('production_countries', '?')[:10]
-        # return Movies.objects.filter(production_countries__in=random_countries).distinct('production_countries')[:10]
-        # return Movies.objects.filter(Q(production_countries__in=random_countries) | [Q(production_countries__contains=x) for x in random_countries]).distinct('production_countries')[:10]
+        if form.is_valid():
+            genres = form.cleaned_data.get('genres')
 
+            while len(rows_list) < 10:
 
-        # q = Q()
-        # for country in random_countries:
-        #     q |= Q(production_countries__icontains = country)
-        #
-        # return Movies.objects.filter(q).distinct('production_countries')[:10]
+                random_countries = []
+                while len(random_countries) < 10:
+                    choice = random.choice(countries)
+                    if choice not in random_countries:
+                        random_countries.append(choice.lower())
+                    else:
+                        pass
 
-    def get_context_data(self, **kwargs):
+                # Get the movies based on the country and return them as a Django context.
+                for country in random_countries:
+                    get_rows = "SELECT * FROM movies_nonhegemony WHERE LOWER(production_countries) LIKE %s AND genres = ALL(%s) LIMIT 1;"
+                    c.execute(get_rows, ('%' + country + '%', genres,))
+                    rows = c.fetchall()
 
-        import psycopg2
-        from .countries import countries
-        import random
-        from psycopg2 import sql
+                    rows_list_titles = []
+                    for i in rows_list:
+                        rows_list_titles.append(i['title'])
 
-        connection = psycopg2.connect("dbname='db_nomurica_all_movies' "
-                                      "user='alex' "
-                                      "host='localhost' "
-                                      "password='password'")
+                    for i in rows:
+                        if i[4] not in rows_list_titles:
+                            row_dict = {}
+                            row_dict['id'] = i[0]
+                            row_dict['adult'] = i[1]
+                            row_dict['original_language'] = i[2]
+                            row_dict['original_title'] = i[3]
+                            row_dict['title'] = i[4]
+                            row_dict['overview'] = i[5]
+                            row_dict['release_date'] = i[6]
+                            row_dict['genres'] = i[7]
+                            row_dict['production_countries'] = i[8]
+                            row_dict['videos'] = i[9]
+                            row_dict['images'] = i[10]
+                            rows_list.append(row_dict)
+                            print(i[7])
 
-        c = connection.cursor()
+                if len(rows_list) < 10:
+                    need_more_rows = 10 - len(rows_list)
 
+                    additional_random_countries = []
+                    while len(additional_random_countries) < need_more_rows:
+                        choice = random.choice(countries)
+                        if choice not in additional_random_countries and choice not in random_countries:
+                            additional_random_countries.append(choice.lower())
+                        else:
+                            pass
+
+                    for country in additional_random_countries:
+                        get_rows = "SELECT * FROM movies_nonhegemony WHERE LOWER(production_countries) LIKE %s AND genres = ANY(%s) LIMIT 1;"
+                        c.execute(get_rows, ('%' + country + '%', genres,))
+
+                        rows_additional = c.fetchall()
+
+                        rows_list_titles = []
+                        for i in rows_list:
+                            rows_list_titles.append(i['title'])
+
+                        for i in rows_additional:
+                            if i[4] not in rows_list_titles:
+                                row_dict = {}
+                                row_dict['id'] = i[0]
+                                row_dict['adult'] = i[1]
+                                row_dict['original_language'] = i[2]
+                                row_dict['original_title'] = i[3]
+                                row_dict['title'] = i[4]
+                                row_dict['overview'] = i[5]
+                                row_dict['release_date'] = i[6]
+                                row_dict['genres'] = i[7]
+                                row_dict['production_countries'] = i[8]
+                                row_dict['videos'] = i[9]
+                                row_dict['images'] = i[10]
+                                rows_list.append(row_dict)
+            print(len(rows_list))
+
+        else:
+            return redirect('/crud/movies/')
+
+    else:
+
+        # Acquire 10 random countries from the full list.
         random_countries = []
 
         while len(random_countries) < 10:
@@ -61,13 +117,11 @@ class MoviesListView(generic.ListView):
             else:
                 pass
 
-        rows_list = []
-
+        # Get the movies based on the country and return them as a Django context.
         for country in random_countries:
-
             get_rows = "SELECT * FROM movies_nonhegemony WHERE LOWER(production_countries) LIKE %s LIMIT 1;"
-
             c.execute(get_rows, ('%' + country + '%',))
+
             rows = c.fetchall()
 
             for i in rows:
@@ -85,9 +139,78 @@ class MoviesListView(generic.ListView):
                 row_dict['images'] = i[10]
                 rows_list.append(row_dict)
 
-        return {"object_list": rows_list}
+    connection.close()
 
-    template_name = r"movies_crud/movies_list.html"
+    return render(request, r"movies_crud/movies_list.html", {"object_list": rows_list, "form": form})
+
+
+
+# def GenresView(request):
+#     if request.method == 'POST':
+#         form = GenresForm(request.POST)
+#         if form.is_valid():
+#             genres = form.cleaned_data.get('genres')
+#             print(genres)
+#     else:
+#         form = GenresForm
+#
+#     return render(request, r"movies_crud/genres_form.html", {'form':form})
+
+
+# class MoviesListView(generic.ListView):
+#     model = Movies
+#
+#     def get_context_data(self, **kwargs):
+#
+#         # Create cursor for database.
+#
+#         connection = psycopg2.connect("dbname='db_nomurica_all_movies' "
+#                                       "user='alex' "
+#                                       "host='localhost' "
+#                                       "password='password'")
+#
+#         c = connection.cursor()
+#
+#         # Acquire 10 random countries from the full list.
+#         random_countries = []
+#
+#         while len(random_countries) < 10:
+#             choice = random.choice(countries)
+#             if choice not in random_countries:
+#                 random_countries.append(choice.lower())
+#             else:
+#                 pass
+#
+#         # Get the movies based on the country and return them as a Django context.
+#
+#         rows_list = []
+#
+#         for country in random_countries:
+#
+#             get_rows = "SELECT * FROM movies_nonhegemony WHERE LOWER(production_countries) LIKE %s LIMIT 1;"
+#
+#             c.execute(get_rows, ('%' + country + '%',))
+#             rows = c.fetchall()
+#
+#             for i in rows:
+#                 row_dict = {}
+#                 row_dict['id'] = i[0]
+#                 row_dict['adult'] = i[1]
+#                 row_dict['original_language'] = i[2]
+#                 row_dict['original_title'] = i[3]
+#                 row_dict['title'] = i[4]
+#                 row_dict['overview'] = i[5]
+#                 row_dict['release_date'] = i[6]
+#                 row_dict['genres'] = i[7]
+#                 row_dict['production_countries'] = i[8]
+#                 row_dict['videos'] = i[9]
+#                 row_dict['images'] = i[10]
+#                 rows_list.append(row_dict)
+#
+#         connection.close()
+#         return {"object_list": rows_list}
+#
+#     template_name = r"movies_crud/movies_list.html"
 
 
 

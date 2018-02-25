@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block main %}
+<p>
+        <button onclick="myFunction()" type="submit" class="btn btn-default btn-sm">
+            Select Genres
+        </button>
+</p>
+<div id="myDIV" style="display:none">
+    {% include 'movies_crud/genres_form.html' %}
+</div>
 
 {% for object in object_list %}
 <div>
@@ -20,7 +28,7 @@
         Overview: {{ object.overview }} <br/>
         {% endif %}
         {% if object.videos %}
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ object.videos }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ object.videos }}" frameborder="0" allow="encrypted-media" allowfullscreen></iframe>
         {% endif %}
     </p>
 </div>
@@ -30,5 +38,16 @@
     Image url: {{ movie.images }} <br/>
     <img src="https://image.tmdb.org/t/p/w154{{ movie.images }}"> <alt="Image for {{ movie.title }}"><br/>
     {% endif %}-->
+
+<script>
+function myFunction() {
+    var x = document.getElementById("myDIV");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
 
 {% endblock %}

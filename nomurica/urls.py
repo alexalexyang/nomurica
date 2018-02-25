@@ -41,7 +41,7 @@ urlpatterns += [
 
     # url("^$", direct_to_template, {"template": "index.html"}, name="home"),
     url("^$", views.blog_post_list_index, name="home"),
-    url("", include('movies_crud.urls')),
+    url("crud/", include('movies_crud.urls')),
 
     # HOMEPAGE AS AN EDITABLE PAGE IN THE PAGE TREE
     # ---------------------------------------------
