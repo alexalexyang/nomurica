@@ -4,7 +4,7 @@ certifi==2017.11.5
 chardet==3.0.4
 Django==1.10.8
 django-contrib-comments==1.8.0
-django-debug-toolbar==1.9.1
+django-debug-toolbar==1.11.1
 filebrowser-safe==0.4.7
 future==0.16.0
 grappelli-safe==0.4.7
